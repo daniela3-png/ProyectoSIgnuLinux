@@ -4,73 +4,529 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrintSolutions - Servidor de Impresión</title>
+
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 40px; display: flex; justify-content: center; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 500px; width: 100%; }
-        h1 { color: #1e293b; font-size: 24px; margin-bottom: 5px; }
-        p { color: #64748b; font-size: 14px; margin-top: 0; margin-bottom: 25px; }
-        .drop-zone { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 30px; text-align: center; color: #94a3b8; cursor: pointer; transition: all 0.3s; }
-        .drop-zone:hover { border-color: #3b82f6; color: #3b82f6; background-color: #eff6ff; }
-        button { background-color: #3b82f6; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; font-size: 16px; margin-top: 20px; cursor: pointer; transition: background 0.2s; }
-        button:hover { background-color: #2563eb; }
-        .status { margin-top: 20px; padding: 12px; border-radius: 6px; font-size: 14px; text-align: center; display: none; }
-        .success { background-color: #dcfce7; color: #166534; }
-        .error { background-color: #fee2e2; color: #991b1b; }
+       
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #eef4fb;
+            margin: 0;
+            padding: 35px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 28px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            max-width: 560px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 70px;
+            background: linear-gradient(135deg, #2563eb, #0ea5e9);
+            clip-path: ellipse(65% 70% at 80% 0%);
+        }
+
+        h1 {
+            color: #0f172a;
+            font-size: 28px;
+            position: relative;
+            z-index: 1;
+        }
+
+        p {
+            color: #475569;
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        label {
+            color: #0f172a;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        
+        .encabezado {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .encabezado img {
+            width: 82px;
+            height: 76px;
+        }
+
+        .encabezado h1 {
+            margin: 0;
+        }
+
+        .encabezado p {
+            margin: 0;
+        }
+
+        
+        .campo {
+            display: grid;
+            grid-template-columns: 32px 180px 1fr;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .icono {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+      
+        .drop-zone {
+            width: 100%;
+            box-sizing: border-box;
+            border: 2px dashed #93c5fd;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.4;
+            background: #f8fbff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        #fileNameDisplay {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #334155;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        
+        button {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .success {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+       
+        .admin-btn {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: auto;
+            padding: 6px 12px;
+            margin: 0;
+            font-size: 12px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.85);
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            z-index: 2;
+        }
+
+        .admin-btn:hover {
+            background: white;
+        }
+
+        
+        .modal-admin {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.35);
+            backdrop-filter: blur(3px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-contenido {
+            background: white;
+            width: 320px;
+            padding: 22px;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
+            border: 1px solid #e2e8f0;
+        }
+
+        .modal-contenido h2 {
+            margin: 0 0 18px;
+            color: #0f172a;
+            text-align: center;
+            font-size: 22px;
+        }
+
+        .modal-contenido input {
+            width: 100%;
+            margin-bottom: 12px;
+            padding: 11px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .modal-botones {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .modal-botones button {
+            flex: 1;
+            padding: 11px;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+
+        .btn-cancelar {
+            background: #e2e8f0 !important;
+            color: #334155 !important;
+        }
+
+        .btn-cancelar:hover {
+            background: #cbd5e1 !important;
+        }
     </style>
 </head>
+
 <body>
+
     <div class="container">
-        <h1>PrintSolutions Ltda.</h1>
-        <p>Servidor Centralizado de Impresión (Debian 13)</p>
-        
-        <form id="printForm" enctype="multipart/form-data">
-            <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
-                <span>Arrastra tu archivo aquí o haz clic para buscar</span>
-                <input type="file" id="fileInput" name="archivo" style="display:none" required>
+
+        <!-- Botón discreto para entrar al panel administrador -->
+        <button type="button" class="admin-btn" onclick="abrirLoginAdmin()">
+            Admin
+        </button>
+
+        <!-- Encabezado del sistema -->
+        <div class="encabezado">
+            <img src="img/logo.png" alt="Logo PrintSolutions">
+
+            <div>
+                <h1>PrintSolutions Ltda.</h1>
+                <p>Servidor Centralizado de Impresión (Debian 13)</p>
             </div>
-            <div id="fileNameDisplay" style="margin-top:10px; font-size:13px; color:#334155; text-align:center; font-weight:500;"></div>
-            <button type="submit">Enviar Documento a Cola</button>
+        </div>
+
+        <!-- Campo usuario -->
+        <div class="campo">
+            <div class="icono">
+                <img src="img/usuario.png" width="32">
+            </div>
+
+            <label><strong>Usuario:</strong></label>
+
+            <input type="text"
+                   id="usuario"
+                   placeholder="Ingrese su nombre"
+                   required>
+        </div>
+
+        <!-- Campo impresora -->
+        <div class="campo">
+            <div class="icono">
+                <img src="img/impresora.png" width="33">
+            </div>
+
+            <label><strong>Impresora:</strong></label>
+
+            <select id="impresora"></select>
+        </div>
+
+        <!-- Campo páginas -->
+        <div class="campo">
+            <div class="icono">
+                <img src="img/paginas.png" width="34">
+            </div>
+
+            <label><strong>Cantidad de páginas:</strong></label>
+
+            <input type="text"
+                   id="hojas"
+                   readonly>
+        </div>
+
+        <!-- Campo copias -->
+        <div class="campo">
+            <div class="icono">
+                <img src="img/copias.png" width="36">
+            </div>
+
+            <label><strong>Cantidad de copias:</strong></label>
+
+            <input type="number"
+                   id="copias"
+                   value="1"
+                   min="1">
+        </div>
+
+        <!-- Formulario de impresión -->
+        <form id="printForm" enctype="multipart/form-data">
+
+            <div class="campo">
+                <div class="icono">
+                    <img src="img/archivo.png" width="36">
+                </div>
+
+                <label><strong>Seleccionar archivo:</strong></label>
+
+                <div>
+                    <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+                        <span>
+                            Arrastra tu archivo aquí o haz clic para buscar
+                            <br>
+                            PDF, TXT, PNG, JPG o DOCX
+                        </span>
+
+                        <input type="file"
+                               id="fileInput"
+                               name="archivo"
+                               style="display:none"
+                               required>
+                    </div>
+
+                    <div id="fileNameDisplay"></div>
+                </div>
+            </div>
+
+            <button type="submit">
+                Enviar documento a impresión
+            </button>
         </form>
 
+        <!-- Mensajes de éxito o error -->
         <div id="statusBox" class="status"></div>
+
+    </div>
+
+    <!-- Modal de acceso administrador -->
+    <div id="modalAdmin" class="modal-admin">
+        <div class="modal-contenido">
+
+            <h2>Acceso Administrador</h2>
+
+            <input type="text"
+                   id="adminUsuario"
+                   placeholder="Usuario">
+
+            <input type="password"
+                   id="adminClave"
+                   placeholder="Contraseña">
+
+            <div class="modal-botones">
+                <button type="button" onclick="validarAdmin()">
+                    Ingresar
+                </button>
+
+                <button type="button"
+                        class="btn-cancelar"
+                        onclick="cerrarModalAdmin()">
+                    Cancelar
+                </button>
+            </div>
+
+        </div>
     </div>
 
     <script>
+        // Referencias principales del formulario.
         const fileInput = document.getElementById('fileInput');
         const fileNameDisplay = document.getElementById('fileNameDisplay');
-        
+
+        /*
+            Abre el modal de administrador.
+            Este reemplaza al prompt del navegador para ocultar la contraseña.
+        */
+        function abrirLoginAdmin() {
+            document.getElementById('modalAdmin').style.display = 'flex';
+        }
+
+        // Cierra el modal y limpia los campos de usuario y contraseña.
+        function cerrarModalAdmin() {
+            document.getElementById('modalAdmin').style.display = 'none';
+            document.getElementById('adminUsuario').value = '';
+            document.getElementById('adminClave').value = '';
+        }
+
+        // Valida las credenciales del administrador.
+        function validarAdmin() {
+            const usuario = document.getElementById('adminUsuario').value;
+            const clave = document.getElementById('adminClave').value;
+
+            if (usuario === 'admin' && clave === 'admin2026') {
+                window.location.href = '/admin.html';
+            } else {
+                alert('Usuario o contraseña incorrectos.');
+            }
+        }
+
+        /*
+            Carga desde el backend solo las impresoras activas.
+            Si una impresora se desactiva en el panel administrador,
+            desaparece automáticamente del selector.
+        */
+        async function cargarImpresoras() {
+            const response = await fetch('/api/impresoras');
+            const impresoras = await response.json();
+
+            const select = document.getElementById('impresora');
+
+            select.innerHTML = '';
+
+            impresoras
+                .filter(impresora => impresora.activa)
+                .forEach(impresora => {
+                    const option = document.createElement('option');
+                    option.value = impresora.nombre;
+                    option.textContent = impresora.nombre;
+                    select.appendChild(option);
+                });
+        }
+
+        // Carga las impresoras al abrir la página y luego cada 2 segundos.
+        cargarImpresoras();
+        setInterval(cargarImpresoras, 2000);
+
+        // Muestra el nombre del archivo seleccionado.
         fileInput.addEventListener('change', () => {
-            if(fileInput.files.length > 0) {
-                fileNameDisplay.textContent = "Archivo seleccionado: " + fileInput.files[0].name;
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent =
+                    'Archivo seleccionado: ' + fileInput.files[0].name;
             }
         });
 
+        /*
+            Envía el documento al backend.
+            El servidor valida el archivo, cuenta páginas si es PDF,
+            guarda el registro y responde con el resultado.
+        */
         document.getElementById('printForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
             const statusBox = document.getElementById('statusBox');
+            const usuario = document.getElementById('usuario').value.trim();
+            const impresora = document.getElementById('impresora').value;
+            const archivo = fileInput.files[0];
+            const copias = document.getElementById('copias').value;
+
+            if (!usuario) {
+                statusBox.style.display = 'block';
+                statusBox.className = 'status error';
+                statusBox.textContent = 'Debe ingresar el nombre del usuario.';
+                return;
+            }
+
+            if (!archivo) {
+                statusBox.style.display = 'block';
+                statusBox.className = 'status error';
+                statusBox.textContent = 'Debe seleccionar un archivo.';
+                return;
+            }
+
             const formData = new FormData();
-            formData.append('archivo', fileInput.files[0]);
+            formData.append('archivo', archivo);
+            formData.append('usuario', usuario);
+            formData.append('impresora', impresora);
+            formData.append('copias', copias);
 
             statusBox.style.display = 'block';
             statusBox.className = 'status';
             statusBox.textContent = 'Enviando archivo al servidor Debian...';
 
             try {
-                const response = await fetch('/api/imprimir', { method: 'POST', body: formData });
+                const response = await fetch('/api/solicitar', {
+                    method: 'POST',
+                    body: formData
+                });
+
                 const result = await response.json();
-                
+
                 if (response.ok) {
                     statusBox.classList.add('success');
-                    statusBox.textContent = '¡Éxito! ' + result.message;
+                    statusBox.textContent = '¡Éxito! Archivo recibido correctamente.';
+
+                    document.getElementById('hojas').value = result.trabajo.paginas;
+
+                    statusBox.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
                 } else {
                     statusBox.classList.add('error');
                     statusBox.textContent = 'Error: ' + result.error;
                 }
+
             } catch (err) {
                 statusBox.classList.add('error');
                 statusBox.textContent = 'No se pudo conectar con el servidor backend.';
             }
         });
-  </script>
+    </script>
+
 </body>
 </html>
