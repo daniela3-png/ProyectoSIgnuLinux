@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Administrador - PrintSolutions Ltda.</title>
+
+    <style>
+       
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Segoe UI, sans-serif;
+            background: #f4f7fb;
+            color: #0f172a;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        
+        .sidebar {
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 24px 18px;
+        }
+
+        .brand {
+            background: linear-gradient(135deg, #2563eb, #0ea5e9);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand img {
+            width: 48px;
+            height: 48px;
+        }
+
+        .brand h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .brand p {
+            margin: 4px 0 0;
+            font-size: 12px;
+        }
+
+        .menu button {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 13px;
+            text-align: left;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .menu button:hover,
+        .menu button.activo {
+            background: #eaf2ff;
+            color: #2563eb;
+        }
+
+        .btn-salir {
+            color: #dc2626 !important;
+        }
+
+        .btn-salir:hover {
+            background: #fee2e2 !important;
+            color: #dc2626 !important;
+        }
+
+        .admin-card {
+            margin-top: 30px;
+            background: #f8fbff;
+            border: 1px solid #dbeafe;
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 14px;
+        }
+
+        
+        .main {
+            padding: 30px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .subtitulo {
+            color: #64748b;
+            margin-top: 6px;
+        }
+
+        .fecha {
+            background: white;
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            font-weight: 600;
+        }
+
+        /* Las secciones se ocultan y solo se muestra la activa */
+        .seccion {
+            display: none;
+        }
+
+        .seccion.activa {
+            display: block;
+        }
+
+        
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .card,
+        .panel {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        .card-numero {
+            font-size: 30px;
+            font-weight: 800;
+        }
+
+        .card-label {
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .grid-dos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        
+        .impresora-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .nombre-impresora {
+            width: 180px;
+            font-weight: 500;
+        }
+
+        .estado-ok,
+        .estado-rechazado {
+            width: 130px;
+            text-align: center;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .estado-ok {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .estado-rechazado {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .btn-impresora {
+            margin-left: auto;
+            border: none;
+            padding: 7px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            font-weight: 700;
+        }
+
+        
+        .tabla-contenedor {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: white;
+        }
+
+        th {
+            background: #eaf2ff;
+            padding: 10px;
+            border: 1px solid #dbeafe;
+        }
+
+        td {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .estado-aceptado-texto {
+            color: #15803d;
+            font-weight: 800;
+        }
+
+        .estado-rechazado-texto {
+            color: #b91c1c;
+            font-weight: 800;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    
+    <aside class="sidebar">
+
+        <div class="brand">
+            <img src="img/logo.png" alt="Logo PrintSolutions">
+            <div>
+                <h2>PrintSolutions Ltda.</h2>
+                <p>Servidor de Impresión</p>
+            </div>
+        </div>
+
+        <div class="menu">
+            <button class="activo" onclick="mostrarSeccion('dashboard', this)">🏠 Panel principal</button>
+            <button onclick="mostrarSeccion('historial', this)">📄 Historial</button>
+            <button onclick="mostrarSeccion('impresoras', this)">🖨️ Impresoras</button>
+            <button onclick="mostrarSeccion('usuarios', this)">👥 Usuarios</button>
+            <button class="btn-salir" onclick="cerrarSesion()">🚪 Cerrar sesión</button>
+        </div>
+
+        <div class="admin-card">
+            <strong>Administrador</strong><br>
+            admin<br>
+            <span style="color:#16a34a;">● En línea</span>
+        </div>
+
+    </aside>
+
+    
+    <main class="main">
+
+        <div class="topbar">
+            <div>
+                <h1>Panel Interno de Administración</h1>
+                <p class="subtitulo">Gestión de solicitudes de impresión - PrintSolutions Ltda.</p>
+            </div>
+
+            <div class="fecha" id="fechaActual"></div>
+        </div>
+
+        <!-- PANEL PRINCIPAL -->
+        <section id="dashboard" class="seccion activa">
+
+            <div class="cards">
+                <div class="card">
+                    <div class="card-numero" id="totalSolicitudes">0</div>
+                    <div class="card-label">Documentos enviados</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-numero" id="totalImpresoras">0</div>
+                    <div class="card-label">Impresoras activas</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-numero" id="totalPaginas">0</div>
+                    <div class="card-label">Total de páginas impresas</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-numero" id="totalUsuarios">0</div>
+                    <div class="card-label">Usuarios con actividad</div>
+                </div>
+            </div>
+
+            <div class="grid-dos">
+                <div class="panel">
+                    <h2>Impresoras Disponibles</h2>
+                    <div id="listaImpresorasDashboard"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>Resumen del Sistema</h2>
+                    <p><strong>Servidor:</strong> PrintSolutions Ltda.</p>
+                    <p><strong>Sistema operativo:</strong> Debian 13</p>
+                    <p><strong>Servicio:</strong> CUPS</p>
+                    <p><strong>Aplicación:</strong> Node.js + Express</p>
+                    <p><strong>Estado:</strong> <span class="estado-ok">Activo</span></p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Historial Reciente</h2>
+
+                <div class="tabla-contenedor">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Archivo</th>
+                                <th>Impresora</th>
+                                <th>Páginas</th>
+                                <th>Copias</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historialDashboard"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- HISTORIAL -->
+        <section id="historial" class="seccion">
+            <div class="panel">
+                <h2>Historial de Impresiones</h2>
+
+                <div class="tabla-contenedor">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Archivo</th>
+                                <th>Impresora</th>
+                                <th>Páginas</th>
+                                <th>Copias</th>
+                                <th>Estado Final</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historialTabla"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- GESTIÓN DE IMPRESORAS -->
+        <section id="impresoras" class="seccion">
+            <div class="panel">
+                <h2>Gestión de Impresoras</h2>
+                <div id="listaImpresoras"></div>
+            </div>
+        </section>
+
+        <!-- USUARIOS -->
+        <section id="usuarios" class="seccion">
+            <div class="panel">
+                <h2>Usuarios con Actividad</h2>
+                <div id="usuariosLista"></div>
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+    // Guarda temporalmente los trabajos cargados desde el backend.
+    let trabajosGlobales = [];
+
+    // Cambia entre las secciones del menú lateral.
+    function mostrarSeccion(id, boton) {
+        document.querySelectorAll('.seccion').forEach(seccion => {
+            seccion.classList.remove('activa');
+        });
+
+        document.getElementById(id).classList.add('activa');
+
+        document.querySelectorAll('.menu button').forEach(btn => {
+            btn.classList.remove('activo');
+        });
+
+        boton.classList.add('activo');
+    }
+
+    // Muestra la fecha y hora actual en el panel.
+    function cargarFecha() {
+        const ahora = new Date();
+        document.getElementById('fechaActual').textContent = ahora.toLocaleString();
+    }
+
+    // Carga los datos principales desde el servidor.
+    async function cargarDatos() {
+        const response = await fetch('/api/cola');
+        const trabajos = await response.json();
+
+        trabajosGlobales = trabajos;
+
+        actualizarTarjetas(trabajos);
+        cargarTabla('historialTabla', [...trabajos].reverse());
+        cargarTabla('historialDashboard', trabajos.slice(-5).reverse());
+        cargarUsuarios();
+        cargarImpresoras();
+    }
+
+    // Actualiza las tarjetas superiores del panel principal.
+    function actualizarTarjetas(trabajos) {
+        document.getElementById('totalSolicitudes').textContent = trabajos.length;
+
+        const totalPaginas = trabajos.reduce((sum, trabajo) => {
+            const paginas = parseInt(trabajo.paginas);
+            return sum + (isNaN(paginas) ? 0 : paginas);
+        }, 0);
+
+        document.getElementById('totalPaginas').textContent = totalPaginas;
+
+        const usuariosUnicos = [...new Set(trabajos.map(t => t.usuario))];
+        document.getElementById('totalUsuarios').textContent = usuariosUnicos.length;
+    }
+
+    // Llena una tabla de historial según el id recibido.
+    function cargarTabla(idTabla, trabajos) {
+        const tabla = document.getElementById(idTabla);
+        tabla.innerHTML = '';
+
+        trabajos.forEach(trabajo => {
+            const claseEstado = trabajo.estado.includes('Cancelado')
+                ? 'estado-rechazado-texto'
+                : 'estado-aceptado-texto';
+
+            tabla.innerHTML += `
+                <tr>
+                    <td>${trabajo.id}</td>
+                    <td>${trabajo.usuario}</td>
+                    <td>${trabajo.archivo}</td>
+                    <td>${trabajo.impresora}</td>
+                    <td>${trabajo.paginas}</td>
+                    <td>${trabajo.copias}</td>
+                    <td class="${claseEstado}">${trabajo.estado}</td>
+                </tr>
+            `;
+        });
+    }
+
+    // Muestra los usuarios que han enviado documentos.
+    function cargarUsuarios() {
+        const contenedor = document.getElementById('usuariosLista');
+        contenedor.innerHTML = '';
+
+        const usuariosUnicos = [...new Set(trabajosGlobales.map(t => t.usuario))];
+
+        usuariosUnicos.forEach(usuario => {
+            const total = trabajosGlobales.filter(t => t.usuario === usuario).length;
+
+            contenedor.innerHTML += `
+                <div class="impresora-item">
+                    <span>${usuario}</span>
+                    <span>${total} trabajos enviados</span>
+                </div>
+            `;
+        });
+    }
+
+    // Carga las impresoras desde el backend y permite activarlas/desactivarlas.
+    async function cargarImpresoras() {
+        const response = await fetch('/api/impresoras');
+        const impresoras = await response.json();
+
+        const contenedor = document.getElementById('listaImpresoras');
+        const dashboard = document.getElementById('listaImpresorasDashboard');
+
+        if (contenedor) contenedor.innerHTML = '';
+        if (dashboard) dashboard.innerHTML = '';
+
+        const activas = impresoras.filter(i => i.activa).length;
+        document.getElementById('totalImpresoras').textContent = activas;
+
+        impresoras.forEach(impresora => {
+            const html = `
+                <div class="impresora-item">
+                    <span class="nombre-impresora">${impresora.nombre}</span>
+
+                    <span class="${impresora.activa ? 'estado-ok' : 'estado-rechazado'}">
+                        ${impresora.activa ? 'En línea' : 'Fuera de servicio'}
+                    </span>
+
+                    <button class="btn-impresora"
+                            onclick="cambiarEstadoImpresora('${impresora.nombre}')">
+                        ${impresora.activa ? 'Desactivar' : 'Activar'}
+                    </button>
+                </div>
+            `;
+
+            if (contenedor) contenedor.innerHTML += html;
+            if (dashboard) dashboard.innerHTML += html;
+        });
+    }
+
+    // Cambia el estado de una impresora: activa o fuera de servicio.
+    async function cambiarEstadoImpresora(nombre) {
+        await fetch(`/api/impresoras/${nombre}/toggle`, {
+            method: 'POST'
+        });
+
+        cargarDatos();
+    }
+
+    // Cierra la sesión del administrador y vuelve al formulario principal.
+    function cerrarSesion() {
+        if (confirm('¿Desea cerrar la sesión de administrador?')) {
+            window.location.href = '/index.html';
+        }
+    }
+
+    // Actualiza datos y hora automáticamente.
+    setInterval(cargarDatos, 3000);
+    setInterval(cargarFecha, 1000);
+
+    cargarFecha();
+    cargarDatos();
+</script>
+
+</body>
+</html>
