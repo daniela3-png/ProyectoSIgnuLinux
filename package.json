@@ -18,7 +18,8 @@
   "homepage": "https://github.com/daniela3-png/ProyectoSIgnuLinux#readme",
   "description": "",
   "dependencies": {
-    "express": "^5.2.1",
-    "multer": "^2.1.1"
-  }
+  "express": "^5.2.1",
+  "multer": "^2.1.1",
+  "pdf-lib": "^1.17.1"
+}
 }
