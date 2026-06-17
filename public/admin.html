@@ -124,7 +124,6 @@
             font-weight: 600;
         }
 
-        /* Las secciones se ocultan y solo se muestra la activa */
         .seccion {
             display: none;
         }
@@ -387,12 +386,79 @@
             </div>
         </section>
 
-        <!-- USUARIOS -->
+        <!-- USUARIOS (RF08) -->
         <section id="usuarios" class="seccion">
-            <div class="panel">
-                <h2>Usuarios con Actividad</h2>
-                <div id="usuariosLista"></div>
+
+            <!-- Formulario para crear nuevo usuario -->
+            <div class="panel" style="margin-bottom: 20px;">
+                <h2>Crear Nuevo Usuario</h2>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-top: 15px;">
+
+                    <!-- Campo: nombre visible del usuario -->
+                    <div>
+                        <label style="font-size: 13px; color: #64748b; display: block; margin-bottom: 5px;">Nombre completo</label>
+                        <input type="text" id="nuevoNombre" placeholder="Ej: María González"
+                               style="width:100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                    </div>
+
+                    <!-- Campo: nombre de usuario para login -->
+                    <div>
+                        <label style="font-size: 13px; color: #64748b; display: block; margin-bottom: 5px;">Usuario (login)</label>
+                        <input type="text" id="nuevoUsuario" placeholder="Ej: mgonzalez"
+                               style="width:100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                    </div>
+
+                    <!-- Campo: contraseña -->
+                    <div>
+                        <label style="font-size: 13px; color: #64748b; display: block; margin-bottom: 5px;">Contraseña</label>
+                        <input type="password" id="nuevoPassword" placeholder="Contraseña"
+                               style="width:100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;" />
+                    </div>
+
+                    <!-- Campo: rol del usuario -->
+                    <div>
+                        <label style="font-size: 13px; color: #64748b; display: block; margin-bottom: 5px;">Rol</label>
+                        <select id="nuevoRol"
+                                style="width:100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                            <option value="usuario">Usuario</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+
+                    <!-- Botón para enviar el formulario -->
+                    <button onclick="crearUsuario()"
+                            style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+                        ➕ Agregar
+                    </button>
+
+                </div>
+
+                <!-- Mensaje de éxito o error al crear usuario -->
+                <div id="mensajeUsuario" style="margin-top: 12px; font-size: 14px; display: none;"></div>
             </div>
+
+            <!-- Tabla de usuarios registrados -->
+            <div class="panel">
+                <h2>Usuarios Registrados</h2>
+
+                <div class="tabla-contenedor">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Usuario</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosTabla"></tbody>
+                    </table>
+                </div>
+            </div>
+
         </section>
 
     </main>
@@ -400,10 +466,9 @@
 </div>
 
 <script>
-    // Guarda temporalmente los trabajos cargados desde el backend.
+    
     let trabajosGlobales = [];
 
-    // Cambia entre las secciones del menú lateral.
     function mostrarSeccion(id, boton) {
         document.querySelectorAll('.seccion').forEach(seccion => {
             seccion.classList.remove('activa');
@@ -418,13 +483,13 @@
         boton.classList.add('activo');
     }
 
-    // Muestra la fecha y hora actual en el panel.
+    // Muestra la fecha y hora actual 
     function cargarFecha() {
         const ahora = new Date();
         document.getElementById('fechaActual').textContent = ahora.toLocaleString();
     }
 
-    // Carga los datos principales desde el servidor.
+    // Carga los datos principales 
     async function cargarDatos() {
         const response = await fetch('/api/cola');
         const trabajos = await response.json();
@@ -438,7 +503,7 @@
         cargarImpresoras();
     }
 
-    // Actualiza las tarjetas superiores del panel principal.
+    // Actualiza las tarjetas superiores del panel 
     function actualizarTarjetas(trabajos) {
         document.getElementById('totalSolicitudes').textContent = trabajos.length;
 
@@ -453,7 +518,7 @@
         document.getElementById('totalUsuarios').textContent = usuariosUnicos.length;
     }
 
-    // Llena una tabla de historial según el id recibido.
+    // Llena una tabla de historial 
     function cargarTabla(idTabla, trabajos) {
         const tabla = document.getElementById(idTabla);
         tabla.innerHTML = '';
@@ -477,26 +542,110 @@
         });
     }
 
-    // Muestra los usuarios que han enviado documentos.
-    function cargarUsuarios() {
-        const contenedor = document.getElementById('usuariosLista');
-        contenedor.innerHTML = '';
+    async function cargarUsuarios() {
+        const response = await fetch('/api/usuarios'); 
+        const usuarios = await response.json();         
 
-        const usuariosUnicos = [...new Set(trabajosGlobales.map(t => t.usuario))];
+        const tabla = document.getElementById('usuariosTabla'); 
+        if (!tabla) return; 
 
-        usuariosUnicos.forEach(usuario => {
-            const total = trabajosGlobales.filter(t => t.usuario === usuario).length;
+        tabla.innerHTML = ''; 
 
-            contenedor.innerHTML += `
-                <div class="impresora-item">
-                    <span>${usuario}</span>
-                    <span>${total} trabajos enviados</span>
-                </div>
+        usuarios.forEach(u => {
+
+            const colorRol = u.rol === 'admin'
+                ? 'background:#dbeafe; color:#1d4ed8;'  
+                : 'background:#f1f5f9; color:#475569;'; 
+
+            const estadoBadge = u.activo
+                ? '<span style="background:#dcfce7; color:#15803d; padding:3px 10px; border-radius:6px; font-size:12px; font-weight:700;">Activo</span>'
+                : '<span style="background:#fee2e2; color:#dc2626; padding:3px 10px; border-radius:6px; font-size:12px; font-weight:700;">Inactivo</span>';
+
+            const botonEliminar = u.id !== 1
+                ? `<button onclick="eliminarUsuario(${u.id})"
+                           style="padding:5px 12px; background:#fee2e2; color:#dc2626; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; margin-left:6px;">
+                       🗑 Eliminar
+                   </button>`
+                : '';
+
+            const botonToggle = u.id !== 1
+                ? `<button onclick="toggleUsuario(${u.id})"
+                           style="padding:5px 12px; background:${u.activo ? '#fef9c3' : '#dcfce7'}; color:${u.activo ? '#92400e' : '#15803d'}; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
+                       ${u.activo ? 'Desactivar' : 'Activar'}
+                   </button>`
+                : '<span style="font-size:12px; color:#94a3b8;">—</span>';
+
+            tabla.innerHTML += `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${u.nombre}</td>
+                    <td>${u.usuario}</td>
+                    <td><span style="${colorRol} padding:3px 10px; border-radius:6px; font-size:12px; font-weight:700;">${u.rol}</span></td>
+                    <td>${estadoBadge}</td>
+                    <td>${botonToggle}${botonEliminar}</td>
+                </tr>
             `;
         });
     }
 
-    // Carga las impresoras desde el backend y permite activarlas/desactivarlas.
+    async function crearUsuario() {
+
+        // Obtenemos los valores del formulario
+        const nombre   = document.getElementById('nuevoNombre').value.trim();
+        const usuario  = document.getElementById('nuevoUsuario').value.trim();
+        const password = document.getElementById('nuevoPassword').value.trim();
+        const rol      = document.getElementById('nuevoRol').value;
+
+        const mensaje = document.getElementById('mensajeUsuario'); 
+
+        if (!nombre || !usuario || !password) {
+            mensaje.style.display = 'block';
+            mensaje.style.color   = '#dc2626'; 
+            mensaje.textContent   = '⚠ Completa todos los campos antes de agregar.';
+            return; 
+        }
+        const response = await fetch('/api/usuarios', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' }, 
+            body:    JSON.stringify({ nombre, usuario, password, rol }) 
+        });
+
+        const resultado = await response.json(); 
+
+        if (response.ok) {
+            
+            mensaje.style.display = 'block';
+            mensaje.style.color   = '#15803d'; 
+            mensaje.textContent   = `✅ Usuario "${usuario}" creado correctamente.`;
+
+           
+            document.getElementById('nuevoNombre').value   = '';
+            document.getElementById('nuevoUsuario').value  = '';
+            document.getElementById('nuevoPassword').value = '';
+
+            cargarUsuarios(); 
+        } else {
+           
+            mensaje.style.display = 'block';
+            mensaje.style.color   = '#dc2626';
+            mensaje.textContent   = `⚠ Error: ${resultado.error}`;
+        }
+    }
+
+  
+    async function toggleUsuario(id) {
+        await fetch(`/api/usuarios/${id}/toggle`, { method: 'POST' }); 
+        cargarUsuarios(); 
+    }
+
+  
+    async function eliminarUsuario(id) {
+        
+        if (!confirm('¿Estás seguro de que deseas eliminar este usuario?')) return;
+
+        await fetch(`/api/usuarios/${id}`, { method: 'DELETE' }); 
+    }
+
     async function cargarImpresoras() {
         const response = await fetch('/api/impresoras');
         const impresoras = await response.json();
@@ -531,7 +680,7 @@
         });
     }
 
-    // Cambia el estado de una impresora: activa o fuera de servicio.
+    
     async function cambiarEstadoImpresora(nombre) {
         await fetch(`/api/impresoras/${nombre}/toggle`, {
             method: 'POST'
@@ -540,14 +689,13 @@
         cargarDatos();
     }
 
-    // Cierra la sesión del administrador y vuelve al formulario principal.
     function cerrarSesion() {
         if (confirm('¿Desea cerrar la sesión de administrador?')) {
             window.location.href = '/index.html';
         }
     }
 
-    // Actualiza datos y hora automáticamente.
+    // Actualiza datos y hora 
     setInterval(cargarDatos, 3000);
     setInterval(cargarFecha, 1000);
 
