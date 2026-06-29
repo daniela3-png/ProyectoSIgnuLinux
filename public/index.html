@@ -444,22 +444,30 @@
         }
 
         async function cargarImpresoras() {
-            const response = await fetch('/api/impresoras');
-            const impresoras = await response.json();
+    const response = await fetch('/api/impresoras');
+    const impresoras = await response.json();
 
-            const select = document.getElementById('impresora');
-            select.innerHTML = '';
+    const select = document.getElementById('impresora');
 
-            impresoras
-                .filter(impresora => impresora.activa)
-                .forEach(impresora => {
-                    const option = document.createElement('option');
-                    option.value = impresora.nombre;
-                    option.textContent = impresora.nombre;
-                    select.appendChild(option);
-                });
-        }
+    // Guardamos la impresora seleccionada antes de actualizar la lista
+    const impresoraSeleccionada = select.value;
 
+    select.innerHTML = '';
+
+    impresoras
+        .filter(impresora => impresora.activa)
+        .forEach(impresora => {
+            const option = document.createElement('option');
+            option.value = impresora.nombre;
+            option.textContent = impresora.nombre;
+            select.appendChild(option);
+        });
+
+    // Si la impresora anterior sigue disponible, la volvemos a seleccionar
+    if ([...select.options].some(option => option.value === impresoraSeleccionada)) {
+        select.value = impresoraSeleccionada;
+    }
+}
         cargarImpresoras();
         setInterval(cargarImpresoras, 2000);
 
