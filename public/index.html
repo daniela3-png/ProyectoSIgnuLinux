@@ -6,7 +6,6 @@
     <title>PrintSolutions - Servidor de Impresión</title>
 
     <style>
-       
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #eef4fb;
@@ -66,7 +65,6 @@
             box-sizing: border-box;
         }
 
-        
         .encabezado {
             display: flex;
             align-items: center;
@@ -79,15 +77,11 @@
             height: 76px;
         }
 
-        .encabezado h1 {
-            margin: 0;
-        }
-
+        .encabezado h1,
         .encabezado p {
             margin: 0;
         }
 
-        
         .campo {
             display: grid;
             grid-template-columns: 32px 180px 1fr;
@@ -104,7 +98,6 @@
             justify-content: center;
         }
 
-      
         .drop-zone {
             width: 100%;
             box-sizing: border-box;
@@ -134,7 +127,6 @@
             font-weight: 500;
         }
 
-        
         button {
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
             color: white;
@@ -173,7 +165,6 @@
             border: 1px solid #fecaca;
         }
 
-       
         .admin-btn {
             position: absolute;
             top: 18px;
@@ -193,7 +184,6 @@
             background: white;
         }
 
-        
         .modal-admin {
             display: none;
             position: fixed;
@@ -258,12 +248,10 @@
 
     <div class="container">
 
-        <!-- Botón discreto para entrar al panel administrador -->
         <button type="button" class="admin-btn" onclick="abrirLoginAdmin()">
             Admin
         </button>
 
-        <!-- Encabezado del sistema -->
         <div class="encabezado">
             <img src="img/logo.png" alt="Logo PrintSolutions">
 
@@ -273,7 +261,6 @@
             </div>
         </div>
 
-        <!-- Campo usuario -->
         <div class="campo">
             <div class="icono">
                 <img src="img/usuario.png" width="32">
@@ -287,7 +274,6 @@
                    required>
         </div>
 
-        <!-- Campo impresora -->
         <div class="campo">
             <div class="icono">
                 <img src="img/impresora.png" width="33">
@@ -298,7 +284,6 @@
             <select id="impresora"></select>
         </div>
 
-        <!-- Campo páginas -->
         <div class="campo">
             <div class="icono">
                 <img src="img/paginas.png" width="34">
@@ -311,7 +296,6 @@
                    readonly>
         </div>
 
-        <!-- Campo copias -->
         <div class="campo">
             <div class="icono">
                 <img src="img/copias.png" width="36">
@@ -325,7 +309,6 @@
                    min="1">
         </div>
 
-        <!-- Formulario de impresión -->
         <form id="printForm" enctype="multipart/form-data">
 
             <div class="campo">
@@ -359,12 +342,40 @@
             </button>
         </form>
 
-        <!-- Mensajes de éxito o error -->
         <div id="statusBox" class="status"></div>
 
     </div>
 
-    <!-- Modal de acceso administrador -->
+    <!-- Modal para validar usuario antes de imprimir -->
+    <div id="modalUsuario" class="modal-admin">
+        <div class="modal-contenido">
+
+            <h2>Confirmar impresión</h2>
+
+            <input type="text"
+                   id="loginUsuario"
+                   placeholder="Usuario">
+
+            <input type="password"
+                   id="loginClave"
+                   placeholder="Contraseña">
+
+            <div class="modal-botones">
+                <button type="button" onclick="confirmarImpresion()">
+                    Enviar
+                </button>
+
+                <button type="button"
+                        class="btn-cancelar"
+                        onclick="cerrarModalUsuario()">
+                    Cancelar
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal administrador -->
     <div id="modalAdmin" class="modal-admin">
         <div class="modal-contenido">
 
@@ -394,26 +405,21 @@
     </div>
 
     <script>
-        // Referencias principales del formulario.
         const fileInput = document.getElementById('fileInput');
         const fileNameDisplay = document.getElementById('fileNameDisplay');
 
-        /*
-            Abre el modal de administrador.
-            Este reemplaza al prompt del navegador para ocultar la contraseña.
-        */
+        let datosPendientes = null;
+
         function abrirLoginAdmin() {
             document.getElementById('modalAdmin').style.display = 'flex';
         }
 
-        // Cierra el modal y limpia los campos de usuario y contraseña.
         function cerrarModalAdmin() {
             document.getElementById('modalAdmin').style.display = 'none';
             document.getElementById('adminUsuario').value = '';
             document.getElementById('adminClave').value = '';
         }
 
-        // Valida las credenciales del administrador.
         function validarAdmin() {
             const usuario = document.getElementById('adminUsuario').value;
             const clave = document.getElementById('adminClave').value;
@@ -425,17 +431,23 @@
             }
         }
 
-        /*
-            Carga desde el backend solo las impresoras activas.
-            Si una impresora se desactiva en el panel administrador,
-            desaparece automáticamente del selector.
-        */
+        function abrirModalUsuario(formData) {
+            datosPendientes = formData;
+            document.getElementById('modalUsuario').style.display = 'flex';
+        }
+
+        function cerrarModalUsuario() {
+            document.getElementById('modalUsuario').style.display = 'none';
+            document.getElementById('loginUsuario').value = '';
+            document.getElementById('loginClave').value = '';
+            datosPendientes = null;
+        }
+
         async function cargarImpresoras() {
             const response = await fetch('/api/impresoras');
             const impresoras = await response.json();
 
             const select = document.getElementById('impresora');
-
             select.innerHTML = '';
 
             impresoras
@@ -448,11 +460,9 @@
                 });
         }
 
-        // Carga las impresoras al abrir la página y luego cada 2 segundos.
         cargarImpresoras();
         setInterval(cargarImpresoras, 2000);
 
-        // Muestra el nombre del archivo seleccionado.
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 fileNameDisplay.textContent =
@@ -460,12 +470,7 @@
             }
         });
 
-        /*
-            Envía el documento al backend.
-            El servidor valida el archivo, cuenta páginas si es PDF,
-            guarda el registro y responde con el resultado.
-        */
-        document.getElementById('printForm').addEventListener('submit', async (e) => {
+        document.getElementById('printForm').addEventListener('submit', (e) => {
             e.preventDefault();
 
             const statusBox = document.getElementById('statusBox');
@@ -494,23 +499,46 @@
             formData.append('impresora', impresora);
             formData.append('copias', copias);
 
+            abrirModalUsuario(formData);
+        });
+
+        async function confirmarImpresion() {
+            const statusBox = document.getElementById('statusBox');
+
+            const loginUsuario = document.getElementById('loginUsuario').value.trim();
+            const loginClave = document.getElementById('loginClave').value;
+
+            if (!loginUsuario || !loginClave) {
+                alert('Debe ingresar usuario y contraseña.');
+                return;
+            }
+
+            datosPendientes.append('loginUsuario', loginUsuario);
+            datosPendientes.append('loginClave', loginClave);
+
+            document.getElementById('modalUsuario').style.display = 'none';
+
             statusBox.style.display = 'block';
             statusBox.className = 'status';
-            statusBox.textContent = 'Enviando archivo al servidor Debian...';
+            statusBox.textContent = 'Validando usuario y enviando archivo...';
 
             try {
                 const response = await fetch('/api/solicitar', {
                     method: 'POST',
-                    body: formData
+                    body: datosPendientes
                 });
 
                 const result = await response.json();
 
                 if (response.ok) {
                     statusBox.classList.add('success');
-                    statusBox.textContent = '¡Éxito! Archivo recibido correctamente.';
+                    statusBox.textContent = '¡Éxito! Documento enviado correctamente.';
 
                     document.getElementById('hojas').value = result.trabajo.paginas;
+
+                    document.getElementById('loginUsuario').value = '';
+                    document.getElementById('loginClave').value = '';
+                    datosPendientes = null;
 
                     statusBox.scrollIntoView({
                         behavior: 'smooth',
@@ -525,7 +553,7 @@
                 statusBox.classList.add('error');
                 statusBox.textContent = 'No se pudo conectar con el servidor backend.';
             }
-        });
+        }
     </script>
 
 </body>
